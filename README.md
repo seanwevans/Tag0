@@ -16,6 +16,7 @@ This project implements a system for type-tagged values that can represent integ
 ### Heap
 - **ConstexprHeap** is used to manage storage for types like doubles that require indirection.
 - The heap simulates memory allocation at compile time, with overflow protection.
+- Allocation failures return `-1`; `TaggedValue::from` asserts in this case so issues are caught early.
 
 ## Features
 - **Type-Safe Access**: Accessing a value as the wrong type returns a default value (e.g., `-1` or `false`).
@@ -72,7 +73,7 @@ std::cout << result.as<double, ConstexprHeap<double, 8>>(double_heap) << "\n";
 
 ### Compile Command
 ```bash
-g++ -std=c++17 main.cpp -o tagged_value
+g++ -std=c++17 Tag0.cpp -o tagged_value
 ```
 
 ## Running the Program
@@ -82,7 +83,7 @@ g++ -std=c++17 main.cpp -o tagged_value
 
 ## Notes
 - The code is designed for constexpr evaluation, but can run dynamically as well.
-- Overflow protection is in place for heaps, but error reporting is minimal.
+- Overflow protection is in place for heaps. When the heap is full, `allocate` returns `-1` and `TaggedValue::from` triggers an assertion.
 - Extendable by defining additional type policies and extending `TagTraits`.
 
 ## Future Improvements

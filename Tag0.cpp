@@ -1,7 +1,9 @@
 #include <array>
 #include <cstdint>
+
 #include <iostream>
 #include <type_traits>
+
 
 // Base Tagging Traits (Primary Template)
 template <typename T> 
@@ -57,7 +59,12 @@ struct TaggedValue {
             return { TagTraits<int64_t>::tag_value(value) };
         }
         else if constexpr (std::is_same_v<T, double>) {
-            return { heap.allocate(value) };
+            auto ptr = heap.allocate(value);
+            if (ptr == -1) {
+                assert(false && "Heap allocation failed in TaggedValue::from");
+                return { -1 };
+            }
+            return { ptr };
         }
         else if constexpr (std::is_same_v<T, bool>) {
             return { TagTraits<bool>::tag_value(value) };
@@ -108,9 +115,9 @@ constexpr TaggedValue add(const TaggedValue& a, const TaggedValue& b, IntHeap& i
         ? static_cast<double>(b.as<int64_t, IntHeap>(int_heap))
         : b.as<double, DoubleHeap>(double_heap);
 
+
     return TaggedValue::from<double>(fa + fb, double_heap);
 }
-
 
 
 
@@ -118,16 +125,27 @@ constexpr TaggedValue add(const TaggedValue& a, const TaggedValue& b, IntHeap& i
 constexpr auto test_tagging() {
     ConstexprHeap<int64_t, 8> int_heap;
     ConstexprHeap<double, 8> double_heap;
-        
-    auto result = add(
-        TaggedValue::from<int64_t>(10, int_heap), 
-        TaggedValue::from<double>(20.5, double_heap), 
-        int_heap, 
-        double_heap
-    );
+
+    auto a = TaggedValue::from<int64_t>(10, int_heap);
+    assert(a.raw != -1 && "Allocation failed for int64_t in test_tagging");
+
+    auto b = TaggedValue::from<double>(20.5, double_heap);
+    assert(b.raw != -1 && "Allocation failed for double in test_tagging");
+
+    auto result = add(a, b, int_heap, double_heap);
 
     return result.as<double, ConstexprHeap<double, 8>>(double_heap); // Should return 30.5
 }
+
+constexpr bool test_heap_overflow() {
+    ConstexprHeap<double, 1> heap;
+    auto first = heap.allocate(1.0);
+    auto ok_first = first != -1;
+    auto second = heap.allocate(2.0);
+    auto ok_second = second == -1;
+    return ok_first && ok_second;
+}
+static_assert(test_heap_overflow(), "Heap overflow test failed");
 
 constexpr double result = test_tagging();
 
