@@ -73,7 +73,7 @@ std::cout << result.as<double, ConstexprHeap<double, 8>>(double_heap) << "\n";
 
 ### Compile Command
 ```bash
-g++ -std=c++17 main.cpp -o tagged_value
+g++ -std=c++17 Tag0.cpp -o tagged_value
 ```
 
 ## Running the Program
