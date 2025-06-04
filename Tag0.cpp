@@ -1,10 +1,9 @@
 #include <array>
 #include <cstdint>
-#include <cstring>
+
 #include <iostream>
-#include <string>
 #include <type_traits>
-#include <cassert>
+
 
 // Base Tagging Traits (Primary Template)
 template <typename T> 
@@ -115,6 +114,7 @@ constexpr TaggedValue add(const TaggedValue& a, const TaggedValue& b, IntHeap& i
     double fb = b.is_type<int64_t, IntHeap>()
         ? static_cast<double>(b.as<int64_t, IntHeap>(int_heap))
         : b.as<double, DoubleHeap>(double_heap);
+
 
     return TaggedValue::from<double>(fa + fb, double_heap);
 }
