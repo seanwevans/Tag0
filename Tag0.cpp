@@ -1,8 +1,6 @@
 #include <array>
 #include <cstdint>
-#include <cstring>
 #include <iostream>
-#include <string>
 #include <type_traits>
 
 // Base Tagging Traits (Primary Template)
@@ -26,6 +24,10 @@ struct BoolPolicy {
     static constexpr int64_t tag_value(bool value) { return (value ? 1 : 0) | tag; }
     static constexpr bool untag_value(int64_t value) { return (value & ~0b111) != 0; }
 };
+
+template <> struct TagTraits<int64_t> : IntPolicy {};
+template <> struct TagTraits<double> : DoublePolicy {};
+template <> struct TagTraits<bool> : BoolPolicy {};
 
 struct TaggedValue {
     int64_t raw;
@@ -108,11 +110,6 @@ constexpr TaggedValue add(const TaggedValue& a, const TaggedValue& b, IntHeap& i
 
     return TaggedValue::from<double>(fa + fb, double_heap);
 }
-
-
-template <> struct TagTraits<int64_t> : IntPolicy {};
-template <> struct TagTraits<double> : DoublePolicy {};
-template <> struct TagTraits<bool> : BoolPolicy {};
 
 
 
