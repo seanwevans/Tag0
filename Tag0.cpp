@@ -1,5 +1,6 @@
 #include <array>
 #include <cstdint>
+#include <cassert>
 
 #include <iostream>
 #include <type_traits>
