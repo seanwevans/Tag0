@@ -1,8 +1,8 @@
 #include <array>
 #include <cstdint>
-#include <cassert>
 #include <iostream>
 #include <type_traits>
+#include <cassert>
 
 // Base Tagging Traits (Primary Template)
 template <typename T> 
@@ -33,7 +33,7 @@ template <> struct TagTraits<bool> : BoolPolicy {};
 struct TaggedValue {
     int64_t raw;
 
-    template <typename T, typename Heap>
+    template <typename T>
     constexpr bool is_type() const {
         return (raw & 0b111) == TagTraits<T>::tag;
     }
@@ -41,13 +41,13 @@ struct TaggedValue {
     template <typename T, typename Heap>
     constexpr T as(const Heap& heap) const {
         if constexpr (std::is_same_v<T, int64_t>) {
-            return is_type<int64_t, Heap>() ? TagTraits<int64_t>::untag_value(raw) : -1;
+            return is_type<int64_t>() ? TagTraits<int64_t>::untag_value(raw) : -1;
         }
         else if constexpr (std::is_same_v<T, double>) {
-            return is_type<double, Heap>() ? heap.dereference(raw) : -1.0;
+            return is_type<double>() ? heap.dereference(raw) : -1.0;
         }
         else if constexpr (std::is_same_v<T, bool>) {
-            return is_type<bool, Heap>() ? TagTraits<bool>::untag_value(raw) : false;
+            return is_type<bool>() ? TagTraits<bool>::untag_value(raw) : false;
         }
         return -1; // Unsupported type
     }
@@ -100,17 +100,17 @@ template <typename T, size_t N> struct ConstexprHeap {
 // Generalized Addition
 template <typename IntHeap, typename DoubleHeap>
 constexpr TaggedValue add(const TaggedValue& a, const TaggedValue& b, IntHeap& int_heap, DoubleHeap& double_heap) {
-    if (a.is_type<int64_t, IntHeap>() && b.is_type<int64_t, IntHeap>()) {
+    if (a.is_type<int64_t>() && b.is_type<int64_t>()) {
         return TaggedValue::from<int64_t>(
             a.as<int64_t, IntHeap>(int_heap) + b.as<int64_t, IntHeap>(int_heap),
             int_heap
         );
     }
 
-    double fa = a.is_type<int64_t, IntHeap>()
+    double fa = a.is_type<int64_t>()
         ? static_cast<double>(a.as<int64_t, IntHeap>(int_heap))
         : a.as<double, DoubleHeap>(double_heap);
-    double fb = b.is_type<int64_t, IntHeap>()
+    double fb = b.is_type<int64_t>()
         ? static_cast<double>(b.as<int64_t, IntHeap>(int_heap))
         : b.as<double, DoubleHeap>(double_heap);
 
