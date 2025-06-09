@@ -70,10 +70,11 @@ std::cout << result.as<double, ConstexprHeap<double, 8>>(double_heap) << "\n";
 ## Compilation
 ### Requirements
 - C++17 or later
+- `<cassert>` for assertions (already included in `Tag0.cpp`)
 
 ### Compile Command
 ```bash
-g++ -std=c++17 Tag0.cpp -o tagged_value
+g++ -std=c++17 -Wall -Wextra Tag0.cpp -o tagged_value
 ```
 
 ## Running the Program
