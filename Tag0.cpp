@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <cassert>
 
+
 // Base Tagging Traits (Primary Template)
 template <typename T> 
 struct TagTraits;
@@ -22,8 +23,8 @@ struct DoublePolicy {
 
 struct BoolPolicy {
     static constexpr int64_t tag = 0b011;
-    static constexpr int64_t tag_value(bool value) { return (value ? 1 : 0) | tag; }
-    static constexpr bool untag_value(int64_t value) { return (value & ~0b111) != 0; }
+    static constexpr int64_t tag_value(bool value) { return (static_cast<int64_t>(value) << 3) | tag; }
+    static constexpr bool untag_value(int64_t value) { return (value >> 3) != 0; }
 };
 
 template <> struct TagTraits<int64_t> : IntPolicy {};
@@ -135,6 +136,16 @@ constexpr auto test_tagging() {
 
     return result.as<double, ConstexprHeap<double, 8>>(double_heap); // Should return 30.5
 }
+
+constexpr bool test_bool_roundtrip() {
+    ConstexprHeap<int64_t, 1> heap{}; // dummy heap for interface compliance
+    auto t = TaggedValue::from<bool>(true, heap);
+    auto f = TaggedValue::from<bool>(false, heap);
+    bool ok_true = t.as<bool, ConstexprHeap<int64_t, 1>>(heap) == true;
+    bool ok_false = f.as<bool, ConstexprHeap<int64_t, 1>>(heap) == false;
+    return ok_true && ok_false;
+}
+static_assert(test_bool_roundtrip(), "Bool roundtrip test failed");
 
 constexpr bool test_heap_overflow() {
     ConstexprHeap<double, 1> heap;
